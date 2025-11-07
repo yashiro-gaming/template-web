@@ -1,0 +1,180 @@
+    /* Responsive base and utilities */
+    :root{
+        --container: 1100px;
+        --gap: 1rem;
+        --bg: #035d0bab;
+    }
+    *,
+    *::before,
+    *::after{box-sizing: border-box;}
+    html{font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; font-size:16px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+    body{margin:0; line-height:1.5; -webkit-text-size-adjust:100%;}
+
+    /* Layout container to keep header/nav centered on wide screens */
+    header > nav{
+        max-width: var(--container);
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--gap);
+        padding: 0 1rem;
+        background: var(--bg);
+    }
+
+    /* Logo scales with viewport */
+    .logo{
+        width: clamp(120px, 18vw, 220px);
+        height: auto;
+        padding: 8px;
+        margin: 4px 0;
+    }
+    .logo img{width:100%; height:auto; display:block; object-fit:contain;}
+
+    /* Nav list becomes flexible and wraps */
+    nav .right{display:block;}
+    nav ul{
+        list-style:none;
+        display:flex;
+        gap: clamp(12px, 3vw, 32px);
+        padding: 12px 0;
+        margin:0;
+        align-items:center;
+        flex-wrap:wrap;
+    }
+    nav li{cursor:pointer; white-space:nowrap; padding:6px 4px;}
+    nav li:hover{color:#007bff;}
+
+    /* Heading responsive sizing */
+    .heading{ text-align:center; margin: 40px 0; padding: 0 1rem; }
+    .heading h1{ font-size: clamp(24px, 6vw, 60px); margin:0; color:#ffffff; line-height:1.05; }
+
+    /* Main content container */
+    main{
+        max-width: clamp(320px, 86vw, 800px);
+        margin: 0 auto;
+        padding: 16px;
+        font-size: clamp(15px, 1.8vw, 18px);
+        color: #d8d8d8;
+    }
+
+    /* Paragraph card */
+    main p{
+        box-shadow: 0 8px 32px rgba(67,67,67,0.6);
+        border-radius: 20px;
+        backdrop-filter: blur(12px);
+        text-align:center;
+        font-weight:500;
+        padding: 20px;
+        margin: 0 auto;
+    }
+
+    /* Slideshow: fluid with preserved aspect ratio and responsive max-height */
+    .slideshow{
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        aspect-ratio: 2 / 1; /* keeps images proportional */
+        margin: 0 auto 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        background:#000;
+        height: auto; /* allow aspect-ratio to set height */
+    }
+
+    /* Images stack and animate (keeps original animation behavior) */
+    .slideshow img{
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transform: scale(1.03);
+        animation: slideFade 16s linear infinite;
+        will-change: opacity, transform;
+    }
+
+    /* Responsive ad card */
+    .ad{
+        max-width: 300px;
+        width: 90%;
+        margin: 20px auto;
+        padding: 15px;
+        border: 1px solid #ddd;
+        text-align: center;
+        cursor: pointer;
+        background: rgba(255,255,255,0.03);
+        border-radius: 10px;
+    }
+    .ad h2{ font-size: clamp(18px, 2.6vw, 24px); margin:0 0 8px; }
+    .ad p{ font-size: clamp(13px, 2vw, 16px); color:#666; }
+
+    /* Small interactive scale tweaks */
+    .ex{ cursor:pointer; }
+    .ex:hover{ transform: scale(1.02); transition: transform 0.35s ease; }
+
+    /* Improve contrast and spacing for the page block */
+    .block{ background-color: rgba(131,142,10,0.67); padding-bottom: 18px; }
+
+    /* Accessibility focus states */
+    a:focus, button:focus, li:focus{ outline: 3px solid rgba(0,123,255,0.2); outline-offset: 2px; }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+        .slideshow img{ animation: none; opacity:1; position:static; transform:none;}
+        .slideshow{ height:auto; aspect-ratio: auto; }
+    }
+
+    /* Layout adjustments for medium and small screens */
+    @media (max-width: 900px){
+        header > nav{ padding: 0 12px; }
+        nav ul{ gap: 14px; justify-content:center; }
+        .logo{ width: clamp(110px, 22vw, 200px); }
+        .heading{ margin: 30px 0; }
+    }
+
+    @media (max-width: 600px){
+        header > nav{ flex-wrap: wrap; align-items: center; gap:8px; }
+        nav ul{
+            width: 100%;
+            justify-content:center;
+            gap:12px;
+            padding: 8px 0;
+            flex-direction: row;
+        }
+        nav li{ padding:8px 6px; font-size: 15px; }
+        .heading{ margin-top: 18px; }
+        main{ padding: 12px; }
+        .slideshow{ border-radius:12px; }
+        .ad{ max-width: 95%; }
+    }
+
+    /* Very small screens */
+    @media (max-width: 380px){
+        nav ul{ gap:10px; font-size: 14px; }
+        .heading h1{ font-size: clamp(18px, 8vw, 32px); }
+        main p{ padding:16px; font-size:14px; }
+    }
+
+
+
+
+
+
+
+NAV:-
+    border-radius: 58px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 13px;
+    background-color: #ffe1bfb3;
+    backdrop-filter: blur(2px);
+
+
+
+
+
+    
