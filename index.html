@@ -8,7 +8,240 @@
 </head>
 <style>
     /* Original styles for reference */
-   
+    /* Responsive helpers and breakpoints (mobile-first) */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    :root {
+        --content-max: 1200px;
+        --gutter: 16px;
+        --accent-bg: rgba(240, 214, 184, 0.67);
+    }
+
+    /* Constrain central content and provide consistent padding */
+    .block,
+    main,
+    .info-container,
+    .ad {
+        max-width: var(--content-max);
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: var(--gutter);
+        padding-right: var(--gutter);
+    }
+
+    /* Make images responsive by default */
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* Nav: allow wrapping and keep items accessible on narrow screens */
+    nav {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    /* Logo scaling */
+    .logo {
+        width: 160px;
+        min-width: 120px;
+        height: auto;
+    }
+
+    /* Make the top navigation list wrap and compress on smaller widths */
+    nav ul {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 8px 0;
+        justify-content: center;
+    }
+
+    /* Heading responsiveness */
+    .heading h1 {
+        line-height: 1.05;
+        font-weight: 700;
+        margin: 24px 0;
+        text-wrap: balance;
+    }
+
+    /* Slideshow: responsive heights so it never overflows viewport */
+    .slideshow {
+        height: clamp(160px, 28vh, 360px);
+        max-width: 100%;
+    }
+
+    /* Ensure slideshow images scale and preserve cover behavior */
+    .slideshow img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Main text and paragraphs compress on small screens */
+    main {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        font-size: clamp(14px, 1.8vw, 18px);
+        line-height: 1.55;
+    }
+
+    /* Advertisement box responsive constraints */
+    .ad {
+        max-width: 640px;
+        width: 95%;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 12px;
+    }
+
+    /* Info section: allow horizontal scrolling on narrow screens */
+    .info-container {
+        overflow: visible;
+        padding: 12px 0;
+    }
+
+    .info-wrapper {
+        gap: 12px;
+        transition: transform 0.35s ease;
+    }
+
+    /* Make info cards shrink nicely */
+    .info-item {
+        flex: 0 0 280px;
+        min-width: 220px;
+        max-width: 320px;
+    }
+
+    /* Nav arrow buttons: floating but not intrusive on small screens */
+    .nav-arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+    }
+
+    /* -- Breakpoints -- */
+
+    /* Medium screens: tablets and small laptops */
+    @media (max-width: 1024px) {
+        .logo {
+            width: 140px;
+        }
+
+        nav ul {
+            gap: 10px;
+            font-size: 18px;
+        }
+
+        .slideshow {
+            height: clamp(180px, 26vh, 320px);
+        }
+
+        .info-item {
+            flex: 0 0 260px;
+        }
+    }
+
+    /* Small screens: phones */
+    @media (max-width: 768px) {
+        /* Stack nav: logo on left, menu centered below if needed */
+        nav {
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .right {
+            width: 100%;
+            order: 2;
+            display: flex;
+            justify-content: center;
+        }
+
+        .logo {
+            order: 1;
+            width: 120px;
+        }
+
+        nav ul {
+            width: 100%;
+            justify-content: center;
+            padding: 8px 6px;
+            font-size: 16px;
+        }
+
+        .heading h1 {
+            font-size: clamp(20px, 6vw, 36px);
+            margin: 12px 0;
+        }
+
+        main p {
+            padding: 14px;
+            font-size: 15px;
+        }
+
+        .slideshow {
+            height: clamp(140px, 24vh, 260px);
+        }
+
+        /* Make info area horizontally scrollable with snap */
+        .info-wrapper {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+            gap: 12px;
+            padding-bottom: 8px;
+        }
+
+        .info-item {
+            scroll-snap-align: center;
+            flex: 0 0 80%;
+            max-width: 320px;
+        }
+
+        /* Hide arrows on very small devices (touch scroll is available) */
+        .nav-arrow {
+            display: none;
+        }
+    }
+
+    /* Very small phones */
+    @media (max-width: 420px) {
+        .logo {
+            width: 100px;
+        }
+
+        nav ul {
+            font-size: 14px;
+            gap: 8px;
+        }
+
+        .heading h1 {
+            font-size: 20px;
+        }
+
+        .slideshow {
+            height: clamp(120px, 22vh, 200px);
+        }
+
+        main {
+            font-size: 14px;
+        }
+    }
+
+    /* Ensure no horizontal overflow on the page */
+    html, body {
+        overflow-x: hidden;
+    }
 
     body {
         background-image: url("https://cdn.pixabay.com/photo/2018/01/14/23/12/nature-3082832_1280.jpg");
@@ -298,10 +531,12 @@
     .nav-arrow:hover {
         background: rgba(255, 255, 255, 0.3);
     }
+
     .info-item:hover {
         transform: scale(1.09);
         transition: 0.3s;
     }
+
     .info-item:hover img {
         transform: scale(1.1);
         transition: 0.3s;
@@ -317,8 +552,9 @@
     <header>
         <nav>
             <div class="logo">
-                <img src="https://github.com/yashiro-gaming/template-web/blob/main/index_logo.png?raw=true"
-                    alt="no img">
+                <a href="index.html"><img
+                        src="https://github.com/yashiro-gaming/template-web/blob/main/index_logo.png?raw=true"
+                        alt="no img"></a>
             </div>
             <div class="right">
                 <ul>
@@ -421,7 +657,7 @@
     <script>
         // Add event listeners to navigation items for interactivity
         const navItems = document.querySelectorAll('nav ul li');
-        
+
         navItems[0].addEventListener('click', () => {
             window.location.href = 'free-template.html'; // Link to Free Template page
         });
