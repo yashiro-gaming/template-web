@@ -1,0 +1,658 @@
+<!DOCTYPE html>ml<html lang="en">on<head>e=<meta charset="utf-8" />
+<title>Design Studio — Creation</title>
+<style>
+    /* Responsive layout helpers for all breakpoints */
+
+    /* Make canvas images scale nicely */
+    .canvas img { width:100%; height:100%; object-fit:cover; }
+
+    /* Scale down controls a bit on medium screens */
+    @media (max-width: 1200px) {
+        .leftbar { width:56px; }
+        .rightbar { width:220px; }
+        .canvas { max-width: calc(100% - 32px); }
+    }
+
+    /* Tablet and small laptop: stack layout vertically so the UI fits */
+    @media (max-width: 900px) {
+        .app {
+            flex-direction: column;
+            align-items: stretch;
+            gap:10px;
+            padding:10px;
+            height: auto;
+            min-height: 100vh;
+        }
+
+        /* Make left tool column become a top tool row */
+        .leftbar {
+            width: 100%;
+            height: 56px;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 6px;
+            gap: 8px;
+            border-radius: 8px;
+        }
+        .leftbar .toolbar-btn { width:44px; height:44px; }
+
+        /* Canvas area should expand to available width */
+        .center { order: 2; width: 100%; padding: 0; }
+        .canvas-wrap { order: 1; padding: 8px; }
+
+        /* Hide right panel on smaller screens to preserve canvas space */
+        .rightbar { display: none; }
+
+        /* Make the canvas responsive while keeping a reasonable visual area */
+        .canvas {
+            width: 100%;
+            max-width: 100%;
+            height: 60vh;
+            min-height: 320px;
+            transform-origin: top center;
+            margin: 0 auto;
+        }
+
+        /* Simplify rulers and helpers */
+        .ruler-top { padding-left: 12px; font-size: 11px; }
+        .ruler-left { display: none; }
+
+        /* Controls wrap to multiple rows when needed */
+        .controls { flex-wrap: wrap; gap:8px; }
+
+        /* Layer items get slightly denser */
+        .layer-item { padding:6px; font-size:13px; }
+    }
+
+    /* Mobile: hide nav and nav items, compress UI more */
+    @media (max-width: 480px) {
+        nav, nav ul, nav ul li, nav ul li a { display: none !important; }
+
+        .leftbar {
+            height: 52px;
+            gap:6px;
+            padding:6px;
+        }
+        .leftbar .toolbar-btn { width:40px; height:40px; border-radius:6px; }
+        .tool-icon { font-size:16px; }
+
+        .canvas {
+            height: 50vh;
+            min-height: 240px;
+            box-shadow: 0 8px 26px rgba(2,6,23,.06);
+            border-radius: 10px;
+        }
+
+        .controls .group { padding:6px; }
+        .muted { font-size:12px; }
+
+        /* Keep the clear/export/shortcuts accessible but compact */
+        .bottom-actions button, .controls button { padding:6px 8px; font-size:13px; }
+    }
+
+    /* Hide nav for displays smaller than 1536px width (e.g. 1536 x 2048) */
+    @media (max-width: 1536px) {
+        nav, nav ul, nav ul li, nav ul li a { display: none !important; }
+    }
+
+    /* Also ensure nav hidden for displays smaller than 1280px width (e.g. 1280 x 800) */
+    @media (max-width: 1280px) {
+        nav, nav ul, nav ul li, nav ul li a { display: none !important; }
+    }
+
+    /* Very large displays: center content and allow wider canvas */
+    @media (min-width: 1600px) {
+        .app { padding: 24px; gap:18px; }
+        .canvas { width: 1200px; height: 800px; max-width: calc(100% - 520px); }
+    }
+
+    /* Accessibility & touch improvements */
+    @media (pointer: coarse) {
+        .toolbar-btn, button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    }
+  :root{
+    --bg:#f3f6f8; --panel:#fff; --accent:#2563eb; --muted:#6b7280;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#111;}
+  .app{display:flex;height:100vh;gap:12px;padding:12px;box-sizing:border-box;}
+  .leftbar, .rightbar{width:72px; background:var(--panel); border-radius:8px; padding:8px; box-shadow:0 6px 18px rgba(16,24,40,.06); display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toolbar-btn{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid transparent}
+  .toolbar-btn.active{border-color:rgba(37,99,235,.18);box-shadow:0 6px 18px rgba(37,99,235,.08);}
+  .center{flex:1;display:flex;flex-direction:column;gap:8px}
+  .controls{display:flex;align-items:center;gap:10px}
+  .controls .group{background:var(--panel);padding:8px;border-radius:8px;display:flex;gap:6px;align-items:center;box-shadow:0 6px 18px rgba(16,24,40,.04)}
+  .canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:8px}
+  .canvas{
+    width:1100px;height:700px;border-radius:8px;background:#fff;border:1px solid #e6eef8;
+    position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(2,6,23,.06);
+    transform-origin: center center;
+  }
+  .ruler-top,.ruler-left{position:absolute;background:linear-gradient(90deg,#f8fafc,transparent);color:var(--muted);font-size:11px;pointer-events:none}
+  .ruler-top{top:0;left:0;height:22px;width:100%;display:flex;align-items:center;padding-left:40px}
+  .ruler-left{top:0;left:0;width:34px;height:100%;display:flex;flex-direction:column;align-items:center;padding-top:36px}
+  .node{position:absolute;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:move;border:1px dashed transparent}
+  .node.selected{outline:2px solid rgba(37,99,235,.12);border-color:rgba(37,99,235,.25)}
+  .node .content{pointer-events:none}
+  .resizer{position:absolute;width:12px;height:12px;background:var(--panel);border:2px solid #fff;border-radius:3px;box-shadow:0 2px 6px rgba(2,6,23,.12);right:4px;bottom:4px;cursor:se-resize;display:none}
+  .node.selected .resizer{display:block}
+  .rightbar{width:260px;padding:12px;align-items:stretch;overflow:auto}
+  .panel{background:var(--panel);border-radius:8px;padding:10px;box-shadow:0 6px 18px rgba(16,24,40,.04);display:flex;flex-direction:column;gap:8px}
+  label{font-size:12px;color:var(--muted)}
+  input[type="color"], input[type="number"], select, input[type="text"]{width:100%;padding:6px;border-radius:6px;border:1px solid #e6eef8;background:#fff}
+  .layers{display:flex;flex-direction:column;gap:6px}
+  .layer-item{display:flex;justify-content:space-between;align-items:center;padding:6px;border-radius:6px;background:#fbfdff;border:1px solid #eef6ff;cursor:pointer}
+  .bottom-actions{display:flex;gap:8px}
+  button{background:var(--accent);color:#fff;padding:8px;border-radius:8px;border:none;cursor:pointer}
+  button.secondary{background:#fff;color:#111;border:1px solid #e6eef8}
+  .muted{color:var(--muted);font-size:13px}
+  /* simple helpers */
+  .hidden{display:none}
+  .tool-icon{font-size:18px}
+  /* responsive */
+  @media (max-width:1000px){ .rightbar{display:none} .leftbar{width:56px} }
+</style>
+</head>
+<style>
+    nav ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+    nav ul li {
+        display: inline;
+        margin-right: 15px;
+    }
+    nav ul li a {
+        text-decoration: none;
+        color: var(--muted);
+        font-weight: bold;
+    }   
+    nav ul li a:hover {
+        color: var(--accent);
+    }
+    nav {
+        background: var(--panel);
+        padding: 10px;
+        box-shadow: 0 6px 18px rgba(16,24,40,.06);
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+</style>
+<nav>   
+    <ul>
+        <li><a href="free-template.html"> 
+            <img src="back_button.png" alt="">
+        </a></li>
+    </ul>
+</nav>
+<body>
+<div class="app">
+  <div class="leftbar" title="Tools">
+    <div class="toolbar-btn active" data-tool="select" id="tool-select" title="Select (V)">
+      <span class="tool-icon">⬚</span>
+    </div>
+    <div class="toolbar-btn" data-tool="rect" id="tool-rect" title="Rectangle (R)">
+      <span class="tool-icon">▭</span>
+    </div>
+    <div class="toolbar-btn" data-tool="ellipse" id="tool-ellipse" title="Ellipse (O)">
+      <span class="tool-icon">◯</span>
+    </div>
+    <div class="toolbar-btn" data-tool="text" id="tool-text" title="Text (T)">
+      <span class="tool-icon">T</span>
+    </div>
+    <div class="toolbar-btn" data-tool="image" id="tool-image" title="Image (I)">
+      <span class="tool-icon">🖼️</span>
+    </div>
+    <div style="flex:1"></div>
+    <div class="toolbar-btn" id="btn-export" title="Export PNG">
+      <span class="tool-icon">⬇️</span>
+    </div>
+  </div>
+
+  <div class="center">
+    <div class="controls">
+      <div class="group">
+        <button class="secondary" id="toggle-grid">Grid</button>
+        <button class="secondary" id="btn-zoom-in">+</button>
+        <button class="secondary" id="btn-zoom-out">−</button>
+        <div class="muted" id="zoom-level">100%</div>
+      </div>
+      <div class="group" style="margin-left:auto">
+        <div class="muted">Canvas:</div>
+        <select id="canvas-size">
+          <option value="1100x700">1100 x 700</option>
+          <option value="1024x768">1024 x 768</option>
+          <option value="800x600">800 x 600</option>
+        </select>
+        <button class="secondary" id="btn-clear" title="Clear canvas">Clear</button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <div class="canvas" id="canvas" tabindex="0" aria-label="Design canvas">
+        <div class="ruler-top" id="ruler-top"></div>
+        <div class="ruler-left" id="ruler-left"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <div class="muted">Shortcuts: V=select R=rect O=ellipse T=text I=image ⌫ delete / Ctrl+D duplicate</div>
+    </div>
+  </div>
+
+  <div class="rightbar">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>Properties</strong>
+        <div class="muted" id="selected-id">none</div>
+      </div>
+      <div id="properties-empty" class="muted">Select an item to edit properties</div>
+
+      <div id="properties" class="hidden" style="display:flex;flex-direction:column;gap:8px">
+        <label>Fill color</label>
+        <input type="color" id="prop-fill" value="#e6f2ff">
+        <label>Stroke color</label>
+        <input type="color" id="prop-stroke" value="#2563eb">
+        <label>Stroke width</label>
+        <input type="number" id="prop-strokew" min="0" value="0">
+        <label>Width</label>
+        <input type="number" id="prop-w" min="10" value="160">
+        <label>Height</label>
+        <input type="number" id="prop-h" min="10" value="100">
+        <label>Rotate (deg)</label>
+        <input type="number" id="prop-rot" value="0">
+        <label>Font size (for text)</label>
+        <input type="number" id="prop-font" value="18">
+        <div style="display:flex;gap:6px">
+          <button id="bring-front">Bring Front</button>
+          <button id="send-back" class="secondary">Send Back</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button id="duplicate" class="secondary">Duplicate</button>
+          <button id="delete" class="secondary">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:10px">
+      <strong>Layers</strong>
+      <div id="layers" class="layers"></div>
+    </div>
+  </div>
+</div>
+
+<!-- hidden file input for image tool -->
+<input type="file" id="file-picker" accept="image/*" class="hidden" />
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const tools = document.querySelectorAll('.toolbar-btn[data-tool]');
+  const filePicker = document.getElementById('file-picker');
+  const propBox = document.getElementById('properties');
+  const propEmpty = document.getElementById('properties-empty');
+  const layersEl = document.getElementById('layers');
+  const selectedIdEl = document.getElementById('selected-id');
+  const zoomLevelEl = document.getElementById('zoom-level');
+
+  let tool = 'select';
+  let nodes = []; // {id,el,type}
+  let nodeId = 0;
+  let selected = null;
+  let isDragging = false;
+  let dragOffset = {x:0,y:0};
+  let canvasScale = 1;
+
+  // utils
+  const uid = ()=>'n'+(++nodeId);
+  const px = v => (typeof v === 'number')? v + 'px' : v;
+  const getRect = el => el.getBoundingClientRect();
+
+  // set tool buttons
+  tools.forEach(t=>{
+    t.addEventListener('click', ()=> {
+      tools.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      tool = t.dataset.tool;
+      if(tool==='image') filePicker.click();
+    });
+  });
+
+  // image upload handler
+  filePicker.addEventListener('change', e=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    if(!f.type.startsWith('image/')) { alert('Only images allowed'); return; }
+    const fr = new FileReader();
+    fr.onload = () => addNode('image',{w:240,h:160,src:fr.result});
+    fr.readAsDataURL(f);
+    filePicker.value = '';
+  });
+
+  // canvas click to create when non-select tool active
+  canvas.addEventListener('dblclick', (ev)=>{
+    if(tool==='text') {
+      const pos = relativePos(ev);
+      addNode('text',{x:pos.x,y:pos.y,w:240,h:80,text:'Edit text'});
+    }
+  });
+
+  canvas.addEventListener('pointerdown', ev=>{
+    if(ev.target === canvas){
+      if(tool!=='select'){
+        const pos = relativePos(ev);
+        if(tool==='rect') addNode('rect',{x:pos.x,y:pos.y,w:160,h:100});
+        if(tool==='ellipse') addNode('ellipse',{x:pos.x,y:pos.y,w:140,h:140});
+        if(tool==='text') addNode('text',{x:pos.x,y:pos.y,w:240,h:80,text:'Edit text'});
+        ev.preventDefault();
+        return;
+      } else {
+        // click empty canvas: deselect
+        selectNode(null);
+      }
+    }
+
+    // dragging selection
+    const nodeEl = ev.target.closest('.node');
+    if(nodeEl && ev.button === 0){
+      selectNode(nodeEl.dataset.id);
+      if(ev.target.classList.contains('resizer')) {
+        startResize(ev, nodeEl);
+      } else {
+        startDrag(ev, nodeEl);
+      }
+    }
+  });
+
+  function relativePos(ev){
+    const r = canvas.getBoundingClientRect();
+    return {x: Math.round((ev.clientX - r.left)/canvasScale), y: Math.round((ev.clientY - r.top)/canvasScale)};
+  }
+
+  // add node
+  function addNode(type, opts={}){
+    const id = uid();
+    const el = document.createElement('div');
+    el.className = 'node';
+    el.dataset.id = id;
+    el.style.left = px(opts.x || 80);
+    el.style.top = px(opts.y || 80);
+    el.style.width = px(opts.w || 160);
+    el.style.height = px(opts.h || 100);
+    el.style.zIndex = nodes.length + 1;
+    el.dataset.type = type;
+
+    const content = document.createElement('div');
+    content.className = 'content';
+
+    if(type==='rect' || type==='ellipse'){
+      content.innerHTML = '';
+      el.style.background = opts.fill || '#e6f2ff';
+      el.style.border = (opts.strokeWidth||0) + 'px solid ' + (opts.stroke||'transparent');
+      if(type==='ellipse') el.style.borderRadius = '50%';
+    } else if(type==='text'){
+      el.style.background = 'transparent';
+      content.contentEditable = true;
+      content.style.pointerEvents = 'auto';
+      content.innerText = opts.text || 'Text';
+      content.style.fontSize = (opts.fontSize||18) + 'px';
+      content.style.textAlign = 'center';
+    } else if(type==='image'){
+      el.style.background = 'transparent';
+      const img = document.createElement('img');
+      img.src = opts.src || '';
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '100%';
+      img.style.pointerEvents = 'none';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      content.appendChild(img);
+    }
+
+    el.appendChild(content);
+    const res = document.createElement('div'); res.className='resizer';
+    el.appendChild(res);
+    canvas.appendChild(el);
+
+    nodes.push({id,el,type});
+    refreshLayers();
+    selectNode(id);
+    return id;
+  }
+
+  // select/deselect
+  function selectNode(id){
+    if(selected && typeof selected==='object' && selected.el){
+      selected.el.classList.remove('selected');
+    }
+    selected = null;
+    if(!id){ propBox.classList.add('hidden'); propEmpty.classList.remove('hidden'); selectedIdEl.textContent='none'; return; }
+    const found = nodes.find(n=>n.id===id || n.el.dataset.id===id);
+    if(!found) return;
+    selected = found;
+    selected.el.classList.add('selected');
+    propBox.classList.remove('hidden'); propEmpty.classList.add('hidden');
+    selectedIdEl.textContent = selected.id;
+    // populate props
+    const rect = selected.el.getBoundingClientRect();
+    document.getElementById('prop-fill').value = rgbToHex(selected.el.style.background || '#ffffff');
+    document.getElementById('prop-stroke').value = rgbToHex((selected.el.style.border && selected.el.style.border.split(' ')[2]) || '#000000');
+    document.getElementById('prop-strokew').value = parseInt(selected.el.style.borderWidth) || 0;
+    document.getElementById('prop-w').value = parseInt(selected.el.style.width) || parseInt(selected.el.style.maxWidth) || 160;
+    document.getElementById('prop-h').value = parseInt(selected.el.style.height) || 100;
+    const transform = selected.el.style.transform || 'rotate(0deg)';
+    const rotMatch = transform.match(/rotate\((-?\d+)deg\)/);
+    document.getElementById('prop-rot').value = rotMatch ? parseInt(rotMatch[1]) : 0;
+    document.getElementById('prop-font').value = selected.el.querySelector('.content')?.style.fontSize?.replace('px','') || 18;
+  }
+
+  // update properties when inputs change
+  document.getElementById('prop-fill').addEventListener('input', e=>{ if(selected) selected.el.style.background = e.target.value; });
+  document.getElementById('prop-stroke').addEventListener('input', e=>{ if(selected) selected.el.style.borderColor = e.target.value; });
+  document.getElementById('prop-strokew').addEventListener('input', e=>{ if(selected) selected.el.style.borderWidth = e.target.value + 'px'; });
+  document.getElementById('prop-w').addEventListener('input', e=>{ if(selected) selected.el.style.width = e.target.value + 'px'; });
+  document.getElementById('prop-h').addEventListener('input', e=>{ if(selected) selected.el.style.height = e.target.value + 'px'; });
+  document.getElementById('prop-rot').addEventListener('input', e=>{ if(selected) selected.el.style.transform = 'rotate(' + e.target.value + 'deg)'; });
+  document.getElementById('prop-font').addEventListener('input', e=>{ if(selected) selected.el.querySelector('.content') && (selected.el.querySelector('.content').style.fontSize = e.target.value + 'px'); });
+
+  // bring front / send back / duplicate / delete
+  document.getElementById('bring-front').addEventListener('click', ()=>{ if(!selected) return; selected.el.style.zIndex = ++nodeId; refreshLayers(); });
+  document.getElementById('send-back').addEventListener('click', ()=>{ if(!selected) return; selected.el.style.zIndex = 1; refreshLayers(); });
+  document.getElementById('duplicate').addEventListener('click', ()=>{ if(!selected) return; duplicateNode(selected.id); });
+  document.getElementById('delete').addEventListener('click', ()=>{ if(!selected) return; deleteNode(selected.id); });
+
+  // duplicate & delete functions
+  function duplicateNode(id){
+    const n = nodes.find(x=>x.id===id); if(!n) return;
+    const r = n.el.getBoundingClientRect(); const c = canvas.getBoundingClientRect();
+    const cx = r.left - c.left, cy = r.top - c.top;
+    const type = n.type;
+    if(type==='image'){
+      const src = n.el.querySelector('img')?.src;
+      addNode('image',{x:cx+20,y:cy+20,w:r.width,h:r.height,src});
+    } else if(type==='text'){
+      addNode('text',{x:cx+20,y:cy+20,w:r.width,h:r.height,text:n.el.querySelector('.content').innerText});
+    } else {
+      addNode(type,{x:cx+20,y:cy+20,w:r.width,h:r.height,fill:n.el.style.background,stroke:n.el.style.borderColor,strokeWidth:parseInt(n.el.style.borderWidth)||0});
+    }
+  }
+
+  function deleteNode(id){
+    const idx = nodes.findIndex(n=>n.id===id);
+    if(idx>=0){
+      const n = nodes[idx];
+      n.el.remove();
+      nodes.splice(idx,1);
+      selectNode(null);
+      refreshLayers();
+    }
+  }
+
+  // layers
+  function refreshLayers(){
+    layersEl.innerHTML='';
+    // sort by zIndex descending
+    const sorted = [...nodes].sort((a,b)=> (parseInt(b.el.style.zIndex)||0) - (parseInt(a.el.style.zIndex)||0));
+    sorted.forEach(n=>{
+      const li = document.createElement('div'); li.className='layer-item';
+      li.innerHTML = `<div>${n.type} <small style="color:var(--muted)">#${n.id}</small></div><div class="muted">${n.el.style.zIndex||0}</div>`;
+      li.addEventListener('click', ()=> selectNode(n.id));
+      layersEl.appendChild(li);
+    });
+  }
+
+  // dragging
+  function startDrag(ev, nodeEl){
+    isDragging = true;
+    canvas.setPointerCapture(ev.pointerId);
+    const rect = nodeEl.getBoundingClientRect();
+    const cRect = canvas.getBoundingClientRect();
+    dragOffset.x = ev.clientX - rect.left;
+    dragOffset.y = ev.clientY - rect.top;
+    function onMove(e){
+      if(!isDragging) return;
+      const nx = (e.clientX - cRect.left - dragOffset.x)/canvasScale;
+      const ny = (e.clientY - cRect.top - dragOffset.y)/canvasScale;
+      nodeEl.style.left = px(Math.round(nx));
+      nodeEl.style.top = px(Math.round(ny));
+    }
+    function onUp(e){
+      isDragging = false; canvas.releasePointerCapture(ev.pointerId);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    }
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  // resizing (bottom-right)
+  function startResize(ev, nodeEl){
+    ev.stopPropagation();
+    canvas.setPointerCapture(ev.pointerId);
+    const startRect = nodeEl.getBoundingClientRect();
+    const cRect = canvas.getBoundingClientRect();
+    function onMove(e){
+      const w = Math.max(10, (e.clientX - startRect.left)/canvasScale + startRect.width/canvasScale - startRect.width/canvasScale);
+      const newW = Math.max(10, Math.round((e.clientX - startRect.left)/canvasScale + startRect.width/canvasScale));
+      const newH = Math.max(10, Math.round((e.clientY - startRect.top)/canvasScale + startRect.height/canvasScale));
+      nodeEl.style.width = px(newW);
+      nodeEl.style.height = px(newH);
+      if(selected && selected.id === nodeEl.dataset.id){
+        document.getElementById('prop-w').value = parseInt(nodeEl.style.width);
+        document.getElementById('prop-h').value = parseInt(nodeEl.style.height);
+      }
+    }
+    function onUp(){
+      canvas.releasePointerCapture(ev.pointerId);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    }
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  // keyboard actions
+  window.addEventListener('keydown', e=>{
+    if(e.key === 'Delete' || e.key === 'Backspace'){ if(selected) deleteNode(selected.id); }
+    if(e.key === 'd' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); if(selected) duplicateNode(selected.id); }
+    if(e.key === 'v') { selectTool('select'); }
+    if(e.key === 'r') { selectTool('rect'); }
+    if(e.key === 'o') { selectTool('ellipse'); }
+    if(e.key === 't') { selectTool('text'); }
+    if(e.key === 'i') { selectTool('image'); filePicker.click(); }
+  });
+
+  function selectTool(name){
+    tool = name;
+    tools.forEach(x=> x.classList.toggle('active', x.dataset.tool===name));
+  }
+
+  // helper to convert rgb to hex
+  function rgbToHex(css){
+    if(!css) return '#ffffff';
+    if(css.startsWith('#')) return css;
+    const m = css.match(/\d+/g);
+    if(!m) return '#ffffff';
+    return '#'+m.slice(0,3).map(n=> (+n).toString(16).padStart(2,'0') ).join('');
+  }
+
+  // canvas controls: zoom & grid
+  let showGrid = false;
+  document.getElementById('toggle-grid').addEventListener('click', ()=>{
+    showGrid = !showGrid;
+    canvas.style.backgroundImage = showGrid ? 'linear-gradient(#edf2ff 1px, transparent 1px), linear-gradient(90deg,#edf2ff 1px, transparent 1px)' : 'none';
+    canvas.style.backgroundSize = showGrid ? '20px 20px, 20px 20px' : '';
+  });
+
+  document.getElementById('btn-zoom-in').addEventListener('click', ()=> setZoom(canvasScale + 0.1));
+  document.getElementById('btn-zoom-out').addEventListener('click', ()=> setZoom(Math.max(0.3, canvasScale - 0.1)));
+  function setZoom(s){
+    canvasScale = Math.round(s*100)/100;
+    canvas.style.transform = `scale(${canvasScale})`;
+    zoomLevelEl.textContent = Math.round(canvasScale*100) + '%';
+  }
+
+  // canvas size dropdown
+  document.getElementById('canvas-size').addEventListener('change', e=>{
+    const [w,h] = e.target.value.split('x').map(Number);
+    canvas.style.width = px(w);
+    canvas.style.height = px(h);
+  });
+
+  // clear canvas
+  document.getElementById('btn-clear').addEventListener('click', ()=>{
+    if(!confirm('Clear canvas?')) return;
+    nodes.forEach(n=>n.el.remove());
+    nodes = []; selectNode(null); refreshLayers();
+  });
+
+  // export to PNG using html2canvas if available; otherwise export JSON
+  document.getElementById('btn-export').addEventListener('click', async ()=>{
+    if(window.html2canvas){
+      const origScale = canvasScale;
+      // temporarily set scale to 1 for accurate export
+      canvas.style.transform = 'scale(1)';
+      const imgCanvas = await html2canvas(canvas, {backgroundColor:null, scale:2});
+      const url = imgCanvas.toDataURL('image/png');
+      downloadURL(url, 'design.png');
+      canvas.style.transform = `scale(${origScale})`;
+    } else {
+      // fallback: export JSON
+      const data = nodes.map(n=>({
+        id: n.id, type: n.type, left: n.el.style.left, top: n.el.style.top, w: n.el.style.width, h: n.el.style.height,
+        z: n.el.style.zIndex, bg: n.el.style.background, img: n.el.querySelector('img')?.src, text: n.el.querySelector('.content')?.innerText
+      }));
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      downloadURL(url, 'design.json');
+      URL.revokeObjectURL(url);
+    }
+  });
+
+  function downloadURL(url, name){
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // duplicate nodes array when node elements are created/destroyed
+  // allow selecting by layer click
+  canvas.addEventListener('click', (e)=> {
+    if(e.target === canvas) return;
+    const nl = e.target.closest('.node');
+    if(nl) selectNode(nl.dataset.id);
+  });
+
+  // initial template nodes for demo
+  addNode('rect',{x:80,y:60,w:300,h:180,fill:'#ffe7e7'});
+  addNode('text',{x:420,y:120,w:320,h:120,text:'Welcome — Edit me!'});
+  addNode('ellipse',{x:80,y:300,w:160,h:160,fill:'#e6f2ff'});
+  addNode('image',{x:420,y:300,w:280,h:160, src:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=60'});
+
+  // expose simple API to console for debugging
+  window.designApp = { addNode, nodes, selectNode, duplicateNode, deleteNode };
+
+})();
+</script>
+
+<!-- optional: html2canvas CDN for export (works if online) -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</html>

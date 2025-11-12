@@ -279,14 +279,14 @@
             <div class="right">
                 <ul class="nav-links">
                     <li><a href="index.html">Home</a></li>
-                    <li><a href="create.html">create template </a></li>
+                    <li><a href="creation.html">create template </a></li>
                     <li><a href="services.html">Services</a></li>
                     <li><a href="contact.html">Contact</a></li>
             </div>
         </nav>
+       
         <h1>free-template</h1>
     </header>
-    <!-- Replace the existing search-wrapper div with this -->
     <div class="search-wrapper">
         <div class="search-box">
             <div class="search-icon">
@@ -392,7 +392,78 @@
             }
         });
     </script>
+    <style>
+        .upload-button {
+            background-color: #35424a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }   
+        .upload-button:hover {
+            background-color: #2c3e50;
+        }
+        span.upload-button svg {
+            margin-right: 5px;
+        }
+        button.upload-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(53, 66, 74, 0.5);
+        }
+        button{
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            border-radius: 20px;
+            
+        }
+    </style>
+    <div class="search-wrapper" style="display: flex; align-items: center;">
+        <button id="uploadTemplate" class="upload-button" ></button>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;">
+                <path d="M12 2v20m10-10H2"></path>
+            </svg>
+            Upload Template
+        </button>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" />
+        <script>
+            const uploadButton = document.getElementById('uploadTemplate');
+            const fileInput = document.getElementById('fileInput');
 
+            uploadButton.addEventListener('click', function () {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function () {
+                const files = this.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please upload an image file.');
+                        this.value = ''; // Clear the input
+                    } else {
+                        alert(`File selected: ${file.name}`);
+                    }
+                }
+            });
+
+            // Add hover effect
+            uploadButton.addEventListener('mouseover', function() {
+                this.style.backgroundColor = '#2c3e50';
+                this.style.transform = 'scale(1.05)';
+            });
+
+            uploadButton.addEventListener('mouseout', function() {
+                this.style.backgroundColor = '#35424a';
+                this.style.transform = 'scale(1)';
+            });
+        </script>
+    </div>
     <main>
         <section class="free-template">
             <h2>free template</h2>
