@@ -1,0 +1,28 @@
+{
+  "name": "design-studio",
+  "version": "1.0.0",
+  "description": "A web-based design tool for creating and editing graphics.",
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "keywords": [
+    "design",
+    "graphics",
+    "canvas",
+    "typescript",
+    "vite"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.4",
+    "vite": "^2.6.4",
+    "tslib": "^2.3.1"
+  }
+}
